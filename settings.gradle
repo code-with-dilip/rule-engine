@@ -1,0 +1,4 @@
+rootProject.name = 'rule-engine'
+
+include('rule-book')
+
