@@ -3,6 +3,8 @@ package com.learndrools.service
 import com.learndrools.config.DroolsRuleFactory
 import com.learndrools.domain.Applicant
 import com.learndrools.domain.SuggestedRole
+import org.kie.api.KieServices
+
 
 class ApplicantService {
 
@@ -10,11 +12,23 @@ class ApplicantService {
 
     fun suggestedRoleForApplicant(applicant: Applicant, suggestedRole: SuggestedRole): SuggestedRole {
 
-        val matchees = kieSession.insert(applicant)
-        println("matchees: ${matchees.toExternalForm()}")
+         kieSession.insert(applicant) // this is a fact to the rule engine
         kieSession.setGlobal("suggestedRole", suggestedRole)
         kieSession.fireAllRules()
         return suggestedRole
+    }
+
+    fun suggestedRoleForApplicant_approch2(applicant: Applicant, suggestedRole: SuggestedRole): SuggestedRole{
+
+
+        val ks = KieServices.Factory.get()
+        val kContainer = ks.kieClasspathContainer
+        val kSession = kContainer.newKieSession()
+        kSession.insert(applicant)
+        kSession.setGlobal("suggestedRole", suggestedRole)
+        kSession.fireAllRules()
+        return suggestedRole
+
     }
 
     fun suggestedRoleForApplicantUsingOwnLogic(applicant: Applicant): SuggestedRole {
