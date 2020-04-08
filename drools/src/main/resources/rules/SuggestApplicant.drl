@@ -19,7 +19,7 @@ rule "Suggest Senior developer Role"
         Applicant(experienceInYears > 5 && experienceInYears <= 10)
         Applicant(currentSalary > 500000 && currentSalary <= 1500000)
     then
-        suggestedRole.setRole("Senior developer");
+        suggestedRole.setRole("Senior Developer");
 end
 
 rule "Suggest Developer Role"

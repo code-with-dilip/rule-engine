@@ -14,13 +14,34 @@ class ApplicantServiceIT extends Specification {
         def suggestedRole = new SuggestedRole()
 
         when:
+        def startTime = System.currentTimeMillis()
         suggestedRole = applicantService.suggestedRoleForApplicant(applicant,suggestedRole)
-
+        println("Completion time : ${(System.currentTimeMillis() - startTime)}")
         then:
         suggestedRole.role == role
 
         where:
         applicant                              || role
         new Applicant("John", 32, 2500000, 11) || "Manager"
+        new Applicant("John Jr", 32, 510000, 9) || "Senior Developer"
+        new Applicant("John Jr 1", 3, 210000, 4) || "Developer"
+    }
+
+    def "suggestedRoleForApplicantUsingOwnLogic"() {
+
+        when:
+        def startTime = System.currentTimeMillis()
+        def suggestedRole = applicantService.suggestedRoleForApplicantUsingOwnLogic(applicant)
+        println("Completion time : ${(System.currentTimeMillis() - startTime)}")
+
+        then:
+        suggestedRole!=null
+        suggestedRole.role == role
+
+        where:
+        applicant                              || role
+        new Applicant("John", 32, 2500000, 11) || "Manager"
+        new Applicant("John Jr", 32, 510000, 9) || "Senior Developer"
+        new Applicant("John Jr 1", 3, 210000, 4) || "Developer"
     }
 }
