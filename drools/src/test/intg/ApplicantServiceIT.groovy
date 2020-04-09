@@ -30,7 +30,7 @@ class ApplicantServiceIT extends Specification {
     def "loadRulesFromClassPath"() {
         given:
         def suggestedRole = new SuggestedRole()
-
+        suggestedRole.role="abc"
         when:
         def startTime = System.currentTimeMillis()
         suggestedRole = applicantService.loadRulesFromClassPath(applicant,suggestedRole)

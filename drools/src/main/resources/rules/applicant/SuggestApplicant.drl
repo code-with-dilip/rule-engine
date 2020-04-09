@@ -2,30 +2,33 @@ package com.baeldung.drools.rules;
 
 import com.learndrools.domain.Applicant;
 
-global com.learndrools.domain.SuggestedRole suggestedRole;
+import com.learndrools.domain.SuggestedRole;
 
-dialect  "mvel"
 
 rule "Suggest Manager Role"
     when
         Applicant(experienceInYears > 10)
         Applicant(currentSalary > 1000000 && currentSalary <= 2500000)
+        $s: SuggestedRole()
     then
-        suggestedRole.setRole("Manager");
+      //  System.out.println("s : "+ $s.getRole());
+        $s.setRole("Manager");
 end
 
 rule "Suggest Senior developer Role"
     when
         Applicant(experienceInYears > 5 && experienceInYears <= 10)
         Applicant(currentSalary > 500000 && currentSalary <= 1500000)
+        $s: SuggestedRole()
     then
-        suggestedRole.setRole("Senior Developer");
+        $s.setRole("Senior Developer");
 end
 
 rule "Suggest Developer Role"
     when
         Applicant(experienceInYears > 0 && experienceInYears <= 5)
         Applicant(currentSalary > 200000 && currentSalary <= 1000000)
+        $s: SuggestedRole()
     then
-        suggestedRole.setRole("Developer");
+        $s.setRole("Developer");
 end

@@ -27,8 +27,8 @@ class ApplicantService {
         //  defined in the /src/test/resources/META-INF/ directory
         val kSession = kContainer.newKieSession("rules.applicant.suggestapplicant.session")
         kSession.insert(applicant)
-        //kSession.insert(suggestedRole)
-        kSession.setGlobal("suggestedRole", suggestedRole)
+        kSession.insert(suggestedRole)
+        //kSession.setGlobal("suggestedRole", suggestedRole)
         kSession.fireAllRules()
         return suggestedRole
 
