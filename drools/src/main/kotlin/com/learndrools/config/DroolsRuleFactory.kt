@@ -12,7 +12,7 @@ import java.io.IOException
 
 class DroolsRuleFactory {
 
-    val RULES_PATH = "rules"
+    val RULES_PATH = "rules/applicant"
 
     private val kieServices = KieServices.Factory.get()
 

@@ -18,15 +18,33 @@ class ApplicantService {
         return suggestedRole
     }
 
-    fun suggestedRoleForApplicant_approch2(applicant: Applicant, suggestedRole: SuggestedRole): SuggestedRole{
-
+    fun loadRulesFromClassPath(applicant: Applicant, suggestedRole: SuggestedRole): SuggestedRole{
 
         val ks = KieServices.Factory.get()
         val kContainer = ks.kieClasspathContainer
-        val kSession = kContainer.newKieSession()
+
+        // Let's load the configurations for the kmodule.xml file
+        //  defined in the /src/test/resources/META-INF/ directory
+        val kSession = kContainer.newKieSession("rules.applicant.suggestapplicant.session")
         kSession.insert(applicant)
+        //kSession.insert(suggestedRole)
         kSession.setGlobal("suggestedRole", suggestedRole)
         kSession.fireAllRules()
+        return suggestedRole
+
+    }
+
+    fun loadRulesFromClassPath_Stateless(applicant: Applicant, suggestedRole: SuggestedRole): SuggestedRole{
+
+        val ks = KieServices.Factory.get()
+        val kContainer = ks.kieClasspathContainer
+
+        // Let's load the configurations for the kmodule.xml file
+        //  defined in the /src/test/resources/META-INF/ directory
+        val kSession = kContainer.newStatelessKieSession("rules.applicant.suggestapplicant.session")
+       // kSession.(applicant)
+        kSession.setGlobal("suggestedRole", suggestedRole)
+//        kSession.fireAllRules()
         return suggestedRole
 
     }
