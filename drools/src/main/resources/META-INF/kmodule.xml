@@ -4,7 +4,5 @@
     <kbase name="rules.applicant">
         <ksession name="rules.applicant.suggestapplicant.session" type="stateful"/>
         <ksession name="rules.applicant.suggestapplicant.session_stateless" type="stateless"/>
-
     </kbase>
-
 </kmodule>

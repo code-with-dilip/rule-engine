@@ -21,10 +21,9 @@ class ApplicantService {
     fun loadRulesFromClassPath(applicant: Applicant, suggestedRole: SuggestedRole): SuggestedRole{
 
         val ks = KieServices.Factory.get()
-        val kContainer = ks.kieClasspathContainer
-
         // Let's load the configurations for the kmodule.xml file
         //  defined in the /src/test/resources/META-INF/ directory
+        val kContainer = ks.kieClasspathContainer
         val kSession = kContainer.newKieSession("rules.applicant.suggestapplicant.session")
         kSession.insert(applicant)
         kSession.insert(suggestedRole)
@@ -38,15 +37,14 @@ class ApplicantService {
 
         val ks = KieServices.Factory.get()
         val kContainer = ks.kieClasspathContainer
-
-        // Let's load the configurations for the kmodule.xml file
-        //  defined in the /src/test/resources/META-INF/ directory
-        val kSession = kContainer.newStatelessKieSession("rules.applicant.suggestapplicant.session")
+        val kSession = kContainer.newStatelessKieSession("rules.applicant.suggestapplicant.session_stateless")
+        val applicant = ks.commands.newInsert(applicant)
+        val suggestedRole = ks.commands.newInsert(suggestedRole, "suggestedRoleOut")
+        val newFireAllRules = ks.commands.newFireAllRules("outFired")
        // kSession.(applicant)
-        kSession.setGlobal("suggestedRole", suggestedRole)
-//        kSession.fireAllRules()
-        return suggestedRole
-
+        val commands = listOf(applicant, suggestedRole, newFireAllRules)
+        val execResults = kSession.execute(ks.commands.newBatchExecution(commands))
+        return execResults.getValue("suggestedRoleOut") as SuggestedRole
     }
 
     fun suggestedRoleForApplicantUsingOwnLogic(applicant: Applicant): SuggestedRole {

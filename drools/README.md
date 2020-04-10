@@ -96,8 +96,55 @@ fun loadRulesFromClassPath(applicant: Applicant, suggestedRole: SuggestedRole): 
 -   The KieModule is created and represented by the  **kmodule.xml** file
 -   A KieModule configuration consists of the following
     -   KieBase -   Represents a compiled version of a set of assets
-    -   KieSession  -   Represents an instance of the rule engine containing the rules in the KieBase         
+        -   Rules can be grouped together in to different **KieBases**
+    -   KieSession  -   Represents an instance of the rule engine instace containing the rules in the KieBase         
 
 
 ### KieSession
 -   Represents the running instance of rule engine with specific configuration and set of rules.
+-   You can have two different types of session in here.
+    -   stateless
+        -   This does not maintain any state between interactions to the rule engine
+    -   stateful
+        -   This  maintains any state between interactions to the rule engine
+        
+- Configuring the StateFul and Stateless in kmodule file
+
+```
+<kmodule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+         xmlns="http://jboss.org/kie/6.0.0/kmodule">
+    <!--<kbase name="rules" default="true" includes="rules.applicant">-->
+    <kbase name="rules.applicant">
+        <ksession name="rules.applicant.suggestapplicant.session" type="stateful"/>
+        <ksession name="rules.applicant.suggestapplicant.session_stateless" type="stateless"/>
+    </kbase>
+</kmodule>
+```        
+
+#### StateFul
+
+```aidl
+
+```
+
+
+#### StateLess
+
+-   We need to create a new session everytime we need to run a set of rules
+ 
+-   We have used the method **newStatelessKieSession** in the below example to create s new session all the time.
+
+```aidl
+    fun loadRulesFromClassPath_Stateless(applicant: Applicant, suggestedRole: SuggestedRole): SuggestedRole{
+
+        val ks = KieServices.Factory.get()
+        val kContainer = ks.kieClasspathContainer
+        val kSession = kContainer.newStatelessKieSession("rules.applicant.suggestapplicant.session_stateless")
+        val applicant = ks.commands.newInsert(applicant)
+        val suggestedRole = ks.commands.newInsert(suggestedRole, "suggestedRoleOut")
+        val newFireAllRules = ks.commands.newFireAllRules("outFired")
+        val commands = listOf(applicant, suggestedRole, newFireAllRules)
+        val execResults = kSession.execute(ks.commands.newBatchExecution(commands))
+        return execResults.getValue("suggestedRoleOut") as SuggestedRole
+    }
+```
