@@ -1,6 +1,7 @@
 # Drools
 
--   Drools is a **Business Rule Management System** 
+-   Drools is a **Business Rule Management System**
+-   Drools rules are data-driven. This means that the only way to activate a rule is by adding data to the engine that matches the conditions of that rule 
 
 ## Rules Execution LifeCycle
 
@@ -124,7 +125,20 @@ fun loadRulesFromClassPath(applicant: Applicant, suggestedRole: SuggestedRole): 
 #### StateFul
 
 ```aidl
+ fun loadRulesFromClassPath(applicant: Applicant, suggestedRole: SuggestedRole): SuggestedRole{
 
+        val ks = KieServices.Factory.get()
+        // Let's load the configurations for the kmodule.xml file
+        //  defined in the /src/test/resources/META-INF/ directory
+        val kContainer = ks.kieClasspathContainer
+        val kSession = kContainer.newKieSession("rules.applicant.suggestapplicant.session")
+        kSession.insert(applicant)
+        kSession.insert(suggestedRole)
+        //kSession.setGlobal("suggestedRole", suggestedRole)
+        kSession.fireAllRules()
+        return suggestedRole
+
+    }
 ```
 
 
@@ -148,3 +162,73 @@ fun loadRulesFromClassPath(applicant: Applicant, suggestedRole: SuggestedRole): 
         return execResults.getValue("suggestedRoleOut") as SuggestedRole
     }
 ```
+
+## Exploring DRL
+
+-   Drools rules are data-driven
+
+### Triggering rules based on a rule evaluation
+
+-   You have three options when it comes to triggering the rules based on a modification of the object based on a rule
+    -   insert 
+        -   Use insert to re-evaluate the rules for a newly inserted object 
+    -   update
+        -   Use update to re-evaluate the rules for the update to an already existing object 
+    -   delete
+        -   Use delete to if you dont want to execute any rules for a certain condition met
+        -   Use this to remove the objects from the working memory
+-   All the above options are very powerful as it provides a way to control the execution of rules        
+
+#### insert
+     
+-   The insert call in the then block loads the new object IsGoldCustomer in to the memory and it rerun the rules that match the below condition
+ 
+```aidl
+rule "Classify Customer - Gold"
+    when
+        $c: Customer( category == Customer.Category.GOLD )
+    then
+        insert(new IsGoldCustomer($c));
+end
+```
+
+#### update
+
+- This is for the use-case where the object is already in the memory and there is an update made to it.    
+
+```aidl
+rule "Suggest Manager Role"
+    when
+        Applicant(experienceInYears > 10)
+        $a: Applicant(currentSalary > 1000000 && currentSalary <= 2500000)
+        $s: SuggestedRole()
+    then
+        //approach 1
+        //modify($s){setRole("Manager")};
+
+        //approach 2
+        $s.setRole("Manager");
+        update($s)
+end
+```
+
+### Rule attributes
+
+-   Rule attributes is an addition feature which provides a  way to control the execution of rules
+-   Rule attributes will only be evaluated after the rule conditions have matched with a group of data in the working memory, therefore, if the rule was not going to be triggered with the existing data, it won't be triggered regardless of how high or low the salience value is set.
+-   All the rule attributes should be given before the **when** condition
+-   Some of the rule attributes are given below
+    -   enabled 
+        -   This will disable the rule even when the condition in the when clause matches
+        -   Example:
+        
+        ```aidl
+            enabled false
+        ```
+    -   salience 
+        -   This is set a priority for a given rule
+        -   The value of the priority can be a positive or negative one
+        -   Example:
+        ```aidl
+            salience 10
+        ```

@@ -8,4 +8,7 @@ class SuggestedRole() {
         get() {
             return field
         }
+    constructor(_role: String) : this() {
+        role = _role
+    }
 }
