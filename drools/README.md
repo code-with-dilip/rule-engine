@@ -238,3 +238,42 @@ end
         ```aidl
             no-loop
         ```                 
+
+#### Using global
+
+-   global is basically used in cases where the whole rules requires something based on a condition
+
+##### Usage
+
+-   First we need to set the global for the kieSession
+
+```aidl
+        kieSession.setGlobal("ruleEngineConstant", ruleEngineConstant)
+``` 
+
+-   Reference the same in the drool file
+
+```aidl
+global com.learndrools.constants.RuleEngineConstants ruleEngineConstant;
+```
+
+-   Using the global constant in the rule
+
+```aidl
+$s : (SuggestedRole(role == ruleEngineConstant.MANAGER.toString()) or SuggestedRole(role == ruleEngineConstant.SENIOR_DEVELOPER.toString()))
+```
+
+-   Using the global constant in the rule with one of the Rule Attributes
+    -   Always use the braces() to use something defined as global to evaluate a condition
+        ```aidl
+        rule "Suggest Senior developer Role"
+        enabled (ruleEngineConstant.BOOLEAN_TRUE)
+            when
+                Applicant(experienceInYears > 5 && experienceInYears <= 10)
+                Applicant(currentSalary > 500000 && currentSalary <= 1500000)
+                $s: SuggestedRole()
+            then
+                $s.setRole("Senior Developer");
+                update($s)
+        end
+        ```
