@@ -232,3 +232,9 @@ end
         ```aidl
             salience 10
         ```
+    -   no-loop
+        -   This is maninly to avoid infinite loop situation where an update to an object in the memory can re-evaluate the rule multiple times
+        -   Example:
+        ```aidl
+            no-loop
+        ```                 

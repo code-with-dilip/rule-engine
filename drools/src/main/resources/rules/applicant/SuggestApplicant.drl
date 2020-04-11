@@ -3,6 +3,7 @@ package com.baeldung.drools.rules;
 import com.learndrools.domain.Applicant;
 
 import com.learndrools.domain.SuggestedRole;
+global com.learndrools.constants.RuleEngineConstants ruleEngineConstant;
 
 
 rule "Suggest Manager Role"
@@ -42,7 +43,7 @@ end
 
 rule "Perform Manager Action"
     when
-       $s : (SuggestedRole(role == "Manager") or SuggestedRole(role == "Senior Developer"))
+       $s : (SuggestedRole(role == ruleEngineConstant.MANAGER.toString()) or SuggestedRole(role == ruleEngineConstant.SENIOR_DEVELOPER.toString()))
     then
         System.out.println("Perform " + $s.getRole()  +" Action");
  end
