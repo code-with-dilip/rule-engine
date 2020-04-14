@@ -237,7 +237,13 @@ end
         -   Example:
         ```aidl
             no-loop
-        ```                 
+        ```         
+    -   lock-on-active
+        -   This is mainly used when other rules invoke each other in an infinite loop. Enabling this flag makes this rule not ot be invoked anymore for the same objects
+        -   Example:
+        ```aidl
+         lock-on-active true
+        ```                    
 
 #### Using global
 
@@ -312,3 +318,68 @@ agenda-group "developer"
     ```
     val kSession = kContainer.newKieSession("rules.applicant.suggestapplicant.session")
     ```     
+    
+    
+#### date-effective/data-expires   
+
+-   The below makes it effective on a given date
+
+```aidl
+rule "Hike Based On Performance"
+    date-effective "01-Apr-2020"
+     date-expires "31-Apr-2020"
+when
+    $e : Employee(performance >= 4)
+    $b: Bonus()
+then
+    Double bonusValue = $e.getSalary() * 0.3;
+    $b.setBonusAmount(bonusValue);
+ end
+
+```
+
+### Controlling Loops in rules
+
+- Check the book for this one.
+
+### Special Drools operations
+
+#### Boolean and numeric operations
+
+```aidl
+Item( salePrice > 100.00 && salePrice <= 500.00&& salePrice != 101.00 )
+
+```
+-   It is best to avoid rules that has multiple conditions in it. 
+-   The right way to use these conditions is to have a separate rule for each condition   
+
+#### Regex operations – matches
+
+```
+rule "validate customer emails"
+       when $c: Customer(email not matches "[A-Za-z0-9-.]+@[A-Za-z0-9-.]+$")
+       then $c.setEmail(null); //invalidate email
+   end
+```
+
+### Collection operations – contains and memberOf
+
+```aidl
+rule "print orders with pencils in them"
+     when
+       $i: Item(name == "pencil")
+       $ol: OrderLine(item == $i)
+       $o: Order($ol memberOf orderLines, orderLines contains $ol)
+     then
+       System.out.println("order with pencils: " + $o);
+   end
+```
+
+
+## Things to Do
+
+-   Dynamically set the rule attributes [TODO]
+    -   date-effective "01-Apr-2020"
+    -   date-expires "31-Apr-2020"
+-   Have the same object run through different rules to get the result [DONE]
+    -   This is working as expected    

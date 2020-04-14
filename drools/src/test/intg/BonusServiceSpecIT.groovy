@@ -20,6 +20,10 @@ class BonusServiceSpecIT extends Specification {
 
         then:
         bonus.bonusAmount == bonusValue
+        def pointsMap = bonus.pointsMap
+        pointsMap.size() ==2
+        println("pointsMap : $pointsMap")
+
 
         where:
         employee                                    || bonusValue
