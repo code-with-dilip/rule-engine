@@ -4,7 +4,7 @@ val spockGroovyVersion: String by project
 
 
 plugins {
-    application
+    //application
     groovy
     kotlin("kapt")
     id ("org.jetbrains.kotlin.plugin.noarg")
@@ -33,16 +33,3 @@ sourceSets {
         }
     }
 }
-
-
-//repositories {
-//    mavenCentral()
-//}
-//val compileKotlin: KotlinCompile by tasks
-//compileKotlin.kotlinOptions {
-//    jvmTarget = "1.8"
-//}
-//val compileTestKotlin: KotlinCompile by tasks
-//compileTestKotlin.kotlinOptions {
-//    jvmTarget = "1.8"
-//}

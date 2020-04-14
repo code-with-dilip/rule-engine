@@ -15,8 +15,8 @@ plugins {
     kotlin("kapt") version "1.3.50" apply false
     kotlin("plugin.jpa") version "1.3.50" apply false
     id ("org.jetbrains.kotlin.plugin.noarg") version "1.3.50" apply false
-    id("org.springframework.boot") version "2.2.6.RELEASE"
-    id("io.spring.dependency-management") version "1.0.7.RELEASE" apply false
+    /*id("org.springframework.boot") version "2.2.6.RELEASE"
+    id("io.spring.dependency-management") version "1.0.7.RELEASE" apply false*/
 }
 
 allprojects {
@@ -33,8 +33,8 @@ subprojects {
 
     apply(plugin = "java-library")
     apply(plugin = "kotlin")
-    apply(plugin = "io.spring.dependency-management")
-    apply(plugin = "kotlin-spring")
+ /*   apply(plugin = "io.spring.dependency-management")
+    apply(plugin = "kotlin-spring")*/
 
     repositories {
         mavenLocal()

@@ -5,6 +5,7 @@ import com.learndrools.constants.RuleEngineConstants
 import com.learndrools.domain.Applicant
 import com.learndrools.domain.SuggestedRole
 import org.kie.api.KieServices
+import org.kie.api.builder.Message
 
 
 class ApplicantService {
@@ -52,6 +53,19 @@ class ApplicantService {
         return execResults.getValue("suggestedRoleOut") as SuggestedRole
     }
 
+    fun loadRulesFromClassPath_AgendaGroup(applicant: Applicant, suggestedRole: SuggestedRole): SuggestedRole {
+        val ks = KieServices.Factory.get()
+        val kContainer = ks.kieClasspathContainer
+        val kSession = kContainer.newKieSession("rules.applicant.suggestapplicant.session")
+        kSession.getAgenda().getAgendaGroup("developer").setFocus();
+        kSession.insert(applicant)
+        kSession.insert(suggestedRole)
+        kSession.setGlobal("ruleEngineConstant", ruleEngineConstant)
+        kSession.fireAllRules()
+        return suggestedRole
+
+    }
+
     fun suggestedRoleForApplicantUsingOwnLogic(applicant: Applicant): SuggestedRole {
         when {
             (applicant.experienceInYears > 10 && applicant.currentSalary in (1000000..2500000)) -> /*&& applicant.currentSalary in (1000000..2500000)*/ {
@@ -79,4 +93,6 @@ class ApplicantService {
             }
         }
     }
+
+
 }

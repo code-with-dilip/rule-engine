@@ -277,3 +277,38 @@ $s : (SuggestedRole(role == ruleEngineConstant.MANAGER.toString()) or SuggestedR
                 update($s)
         end
         ```
+
+#### agenda-group
+-   This is basically used to group the rules
+
+##### Usage
+
+-   This is enabled by defining the rules in the "agenda-group" 
+
+```aidl
+rule "Suggest Developer Role"
+agenda-group "developer"
+    when
+        Applicant(experienceInYears > 0 && experienceInYears <= 5)
+        Applicant(currentSalary > 200000 && currentSalary <= 1000000)
+        $s: SuggestedRole()
+    then
+        $s.setRole("Developer");
+        update($s)
+end
+
+rule "Perform Manager Action"
+agenda-group "developer"
+    when
+       $s : (SuggestedRole(role == ruleEngineConstant.MANAGER.toString()) or SuggestedRole(role == ruleEngineConstant.SENIOR_DEVELOPER.toString()))
+    then
+        System.out.println("Perform " + $s.getRole()  +" Action");
+ end
+``` 
+
+-   By default all the rules have the implicit **MAIN** group.
+-   In order to use the custom **agenda-group** we need to explicitly set that in the code
+    - The same can be done by using the below command
+    ```
+    val kSession = kContainer.newKieSession("rules.applicant.suggestapplicant.session")
+    ```     

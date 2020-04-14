@@ -1,4 +1,4 @@
-package com.baeldung.drools.rules;
+package rules;
 
 import com.learndrools.domain.Applicant;
 
@@ -22,6 +22,7 @@ rule "Suggest Manager Role"
 end
 
 rule "Suggest Senior developer Role"
+//agenda-group "developer"
 enabled (ruleEngineConstant.BOOLEAN_TRUE)
     when
         Applicant(experienceInYears > 5 && experienceInYears <= 10)
@@ -33,6 +34,7 @@ enabled (ruleEngineConstant.BOOLEAN_TRUE)
 end
 
 rule "Suggest Developer Role"
+//agenda-group "developer"
     when
         Applicant(experienceInYears > 0 && experienceInYears <= 5)
         Applicant(currentSalary > 200000 && currentSalary <= 1000000)
@@ -43,6 +45,7 @@ rule "Suggest Developer Role"
 end
 
 rule "Perform Manager Action"
+//agenda-group "developer"
     when
        $s : (SuggestedRole(role == ruleEngineConstant.MANAGER.toString()) or SuggestedRole(role == ruleEngineConstant.SENIOR_DEVELOPER.toString()))
     then

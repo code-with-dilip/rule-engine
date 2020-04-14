@@ -1,0 +1,14 @@
+package rules.bonus;
+import com.learndrools.domain.Employee
+import com.learndrools.domain.Bonus
+
+rule "Hike Based On Performance"
+    date-effective "01-Apr-2020"
+     date-expires "31-Apr-2020"
+when
+    $e : Employee(performance >= 4)
+    $b: Bonus()
+then
+    Double bonusValue = $e.getSalary() * 0.3;
+    $b.setBonusAmount(bonusValue);
+ end

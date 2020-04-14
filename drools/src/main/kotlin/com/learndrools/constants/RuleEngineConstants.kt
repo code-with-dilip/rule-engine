@@ -5,5 +5,6 @@ class RuleEngineConstants {
         const val MANAGER = "Manager"
         const val SENIOR_DEVELOPER = "Senior Developer"
         const val BOOLEAN_TRUE = true
+        const val DEVELOPER = "developer"
     }
 }
