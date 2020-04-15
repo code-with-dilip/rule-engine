@@ -412,30 +412,94 @@ rule "validate customer emails"
 #### Collection operations – contains and memberOf
 
 ```aidl
-rule "print orders with pencils in them"
-     when
-       $i: Item(name == "pencil")
-       $ol: OrderLine(item == $i)
-       $o: Order($ol memberOf orderLines, orderLines contains $ol)
-     then
-       System.out.println("order with pencils: " + $o);
-   end
+rule "Hike Based On Performance Greater than 4 with Extra Role"
+   /* date-effective "01-Apr-2020"
+     date-expires "31-Apr-2020"*/
+when
+    $e : Employee(performance >= 4, extraRole memberOf ruleEngineConstant.roles(), ruleEngineConstant.roles() contains extraRole)
+    $b: Bonus()
+then
+    Double bonusValue = $e.getSalary() * 0.4;
+    $b.setBonusAmount(bonusValue);
+    Map<String, String> pair = new HashMap<>();
+    pair.put("ABC", "1");
+    $b.getPointsMap().putAll(pair);
+    //$b.setPointsMap(pair);
+    System.out.println("First Rule");
+ end
 ```
 
 ###  Working memory breakdown: the from clause
 
 -   The **from** clause is a very versatile tool. It can be used to get data from multiple sources and not only from attributes.
+-   In the below example the **from** clause to iterate through the list and match on a specific value on each and every element
+
 ```aidl
-rule "For every notebook order apply points coupon"
-     when
-       $o: Order($c: customer, $lines: orderLines)
-       OrderLine($item: item) from $lines // retrieved the 
-       Item(name == "notebook") from $item
+rule "Cricket Hobby"
+    /* date-effective "01-Apr-2020"
+      date-expires "31-Apr-2020"*/
+ when
+     $e : Employee($hobbies: hobbies)
+     $ho: Hobby($h : hobby && hobby == "cricket") from $hobbies
+ then
+      System.out.println("Cricket Hobby Rule invoked" + $ho);
+  end
+```
+
+#### Collect from objects
+
+ -  If we insert 50 orders to KieSession and then fire the rules, the rule will fire only once, producing a list of 50 orders.
+```aidl
+rule "Grouping orders"
+     when $list: List() from collect(Order())
      then
-       insert(new Coupon($c, $o, CouponType.POINTS));
+          System.out.println("we've found " +$list.size() + " orders");
    end
 ```
 
+#### Accumulate keyword
+
+-    The **accumulate** keyword is used to transform every match of a condition to a specific type of data.
+
+-   Some common examples where the accumulate keyword is used are counting elements that match a specific condition, get average values of an attribute of certain type of objects, and to find the average, minimum, or maximum values of a specific attribute in a condition.
+
+-   Check the book for examples.
+
+#### Advanced conditional elements
+
+-   NOT
+-   EXISTS AND FORALL KEYWORDS
+-   FORALL
+
+
+**NOT KEYWORD**
+
+```aidl
+rule "warn about empty working memory"
+    when
+           not(Order() or Item())
+       then
+           System.out.println("we don't have elements");
+   end
+```
+
+### Drools syntactic sugar
+
+-   Nested accessors for the attributes of our types
+    ```aidl
+    OrderLine( item.cost < 30.0, item.salePrice < 25.0 )
+
+    ```
+    -   The better approach is to use types
+    
+    ```aidl
+    OrderLine( item.( cost < 30.0,salePrice < 25.0) )
+    ```    
+-   Inline casts for attributes of our types
+-   Null-safe operators
+    ```aidl
+    Order(customer!.category != Category.NA)
+    ```
 ## Things to Do
 
 -   Dynamically set the rule attributes [TODO]

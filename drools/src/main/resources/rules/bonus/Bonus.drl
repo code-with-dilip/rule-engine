@@ -1,6 +1,7 @@
 package rules.bonus;
 import com.learndrools.domain.Employee
 import com.learndrools.domain.Bonus
+import com.learndrools.domain.Hobby
 import kotlin.Pair
 import java.util.HashMap
 import java.util.Map
@@ -22,6 +23,16 @@ then
     //$b.setPointsMap(pair);
     System.out.println("First Rule");
  end
+
+ rule "Cricket Hobby"
+    /* date-effective "01-Apr-2020"
+      date-expires "31-Apr-2020"*/
+ when
+     $e : Employee($hobbies: hobbies)
+     $ho: Hobby($h : hobby && hobby == "cricket") from $hobbies
+ then
+      System.out.println("Cricket Hobby Rule invoked" + $ho);
+  end
 
 
 

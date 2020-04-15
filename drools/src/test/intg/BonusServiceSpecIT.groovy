@@ -1,5 +1,6 @@
 import com.learndrools.domain.Bonus
 import com.learndrools.domain.Employee
+import com.learndrools.domain.Hobby
 import com.learndrools.service.BonusService
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -24,9 +25,10 @@ class BonusServiceSpecIT extends Specification {
 
 
         where:
-        employee                                                  || bonusValue
-        new Employee("Ian", 100000, "Developer", 4.1, "coaching") || employee.salary * 0.4
-        new Employee("Ian", 100000, "Developer", 4.1, "")         || employee.salary * 0.3
+        employee                                                                                                      || bonusValue
+        new Employee("Ian", 100000, "Developer", 4.1, "coaching", List.of(new Hobby("gaming"), new Hobby("cricket"))) || employee.salary * 0.4
+        new Employee("Ian", 100000, "Developer", 4.1, "", List.of(new Hobby("basketball"), new Hobby("volleyball")))  || employee.salary * 0.3
+        new Employee("Ian", 100000, "Developer", 4.1, "coaching", List.of(new Hobby("gaming"), new Hobby("cricket"))) || employee.salary * 0.4
 
     }
 }

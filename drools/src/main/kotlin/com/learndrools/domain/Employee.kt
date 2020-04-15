@@ -5,5 +5,6 @@ data class Employee(
     val salary: Double,
     val role: String,
     val performance: Double,
-    val extraRole: String
+    val extraRole: String,
+    val hobbies: List<Hobby>
 )
