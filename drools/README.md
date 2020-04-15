@@ -362,7 +362,7 @@ rule "validate customer emails"
    end
 ```
 
-### Collection operations – contains and memberOf
+#### Collection operations – contains and memberOf
 
 ```aidl
 rule "print orders with pencils in them"
@@ -375,6 +375,19 @@ rule "print orders with pencils in them"
    end
 ```
 
+###  Working memory breakdown: the from clause
+
+-   The **from** clause is a very versatile tool. It can be used to get data from multiple sources and not only from attributes.
+```aidl
+rule "For every notebook order apply points coupon"
+     when
+       $o: Order($c: customer, $lines: orderLines)
+       OrderLine($item: item) from $lines // retrieved the 
+       Item(name == "notebook") from $item
+     then
+       insert(new Coupon($c, $o, CouponType.POINTS));
+   end
+```
 
 ## Things to Do
 
