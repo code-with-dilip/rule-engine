@@ -1,0 +1,36 @@
+package rules.bonus;
+import com.learndrools.domain.Employee
+import com.learndrools.domain.Bonus
+import kotlin.Pair
+import java.util.HashMap
+import java.util.Map
+
+rule "Hike Based On Performance Greater than 4"
+   /* date-effective "01-Apr-2020"
+     date-expires "31-Apr-2020"*/
+when
+    $e : Employee(performance >= 4)
+    $b: Bonus()
+then
+    Double bonusValue = $e.getSalary() * 0.3;
+    $b.setBonusAmount(bonusValue);
+    Map<String, String> pair = new HashMap<>();
+    pair.put("ABC", "1");
+    $b.getPointsMap().putAll(pair);
+    //$b.setPointsMap(pair);
+ end
+
+
+rule "Hike Based On Performance equal to 4"
+    /*date-effective "01-Apr-2020"
+     date-expires "31-Apr-2020"*/
+when
+    $e : Employee(performance == 4)
+    $b: Bonus()
+then
+    Double bonusValue = $e.getSalary() * 0.3;
+    $b.setBonusAmount(bonusValue);
+    Map<String, String> pair = new HashMap<>();
+    pair.put("DEF", "2");
+    $b.getPointsMap().putAll(pair);
+ end

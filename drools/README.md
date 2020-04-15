@@ -1,6 +1,7 @@
 # Drools
 
--   Drools is a **Business Rule Management System** 
+-   Drools is a **Business Rule Management System**
+-   Drools rules are data-driven. This means that the only way to activate a rule is by adding data to the engine that matches the conditions of that rule 
 
 ## Rules Execution LifeCycle
 
@@ -124,7 +125,20 @@ fun loadRulesFromClassPath(applicant: Applicant, suggestedRole: SuggestedRole): 
 #### StateFul
 
 ```aidl
+ fun loadRulesFromClassPath(applicant: Applicant, suggestedRole: SuggestedRole): SuggestedRole{
 
+        val ks = KieServices.Factory.get()
+        // Let's load the configurations for the kmodule.xml file
+        //  defined in the /src/test/resources/META-INF/ directory
+        val kContainer = ks.kieClasspathContainer
+        val kSession = kContainer.newKieSession("rules.applicant.suggestapplicant.session")
+        kSession.insert(applicant)
+        kSession.insert(suggestedRole)
+        //kSession.setGlobal("suggestedRole", suggestedRole)
+        kSession.fireAllRules()
+        return suggestedRole
+
+    }
 ```
 
 
@@ -148,3 +162,237 @@ fun loadRulesFromClassPath(applicant: Applicant, suggestedRole: SuggestedRole): 
         return execResults.getValue("suggestedRoleOut") as SuggestedRole
     }
 ```
+
+## Exploring DRL
+
+-   Drools rules are data-driven
+
+### Triggering rules based on a rule evaluation
+
+-   You have three options when it comes to triggering the rules based on a modification of the object based on a rule
+    -   insert 
+        -   Use insert to re-evaluate the rules for a newly inserted object 
+    -   update
+        -   Use update to re-evaluate the rules for the update to an already existing object 
+    -   delete
+        -   Use delete to if you dont want to execute any rules for a certain condition met
+        -   Use this to remove the objects from the working memory
+-   All the above options are very powerful as it provides a way to control the execution of rules        
+
+#### insert
+     
+-   The insert call in the then block loads the new object IsGoldCustomer in to the memory and it rerun the rules that match the below condition
+ 
+```aidl
+rule "Classify Customer - Gold"
+    when
+        $c: Customer( category == Customer.Category.GOLD )
+    then
+        insert(new IsGoldCustomer($c));
+end
+```
+
+#### update
+
+- This is for the use-case where the object is already in the memory and there is an update made to it.    
+
+```aidl
+rule "Suggest Manager Role"
+    when
+        Applicant(experienceInYears > 10)
+        $a: Applicant(currentSalary > 1000000 && currentSalary <= 2500000)
+        $s: SuggestedRole()
+    then
+        //approach 1
+        //modify($s){setRole("Manager")};
+
+        //approach 2
+        $s.setRole("Manager");
+        update($s)
+end
+```
+
+### Rule attributes
+
+-   Rule attributes is an addition feature which provides a  way to control the execution of rules
+-   Rule attributes will only be evaluated after the rule conditions have matched with a group of data in the working memory, therefore, if the rule was not going to be triggered with the existing data, it won't be triggered regardless of how high or low the salience value is set.
+-   All the rule attributes should be given before the **when** condition
+-   Some of the rule attributes are given below
+    -   enabled 
+        -   This will disable the rule even when the condition in the when clause matches
+        -   Example:
+        
+        ```aidl
+            enabled false
+        ```
+    -   salience 
+        -   This is set a priority for a given rule
+        -   The value of the priority can be a positive or negative one
+        -   Example:
+        ```aidl
+            salience 10
+        ```
+    -   no-loop
+        -   This is maninly to avoid infinite loop situation where an update to an object in the memory can re-evaluate the rule multiple times
+        -   Example:
+        ```aidl
+            no-loop
+        ```         
+    -   lock-on-active
+        -   This is mainly used when other rules invoke each other in an infinite loop. Enabling this flag makes this rule not ot be invoked anymore for the same objects
+        -   Example:
+        ```aidl
+         lock-on-active true
+        ```                    
+
+#### Using global
+
+-   global is basically used in cases where the whole rules requires something based on a condition
+
+##### Usage
+
+-   First we need to set the global for the kieSession
+
+```aidl
+        kieSession.setGlobal("ruleEngineConstant", ruleEngineConstant)
+``` 
+
+-   Reference the same in the drool file
+
+```aidl
+global com.learndrools.constants.RuleEngineConstants ruleEngineConstant;
+```
+
+-   Using the global constant in the rule
+
+```aidl
+$s : (SuggestedRole(role == ruleEngineConstant.MANAGER.toString()) or SuggestedRole(role == ruleEngineConstant.SENIOR_DEVELOPER.toString()))
+```
+
+-   Using the global constant in the rule with one of the Rule Attributes
+    -   Always use the braces() to use something defined as global to evaluate a condition
+        ```aidl
+        rule "Suggest Senior developer Role"
+        enabled (ruleEngineConstant.BOOLEAN_TRUE)
+            when
+                Applicant(experienceInYears > 5 && experienceInYears <= 10)
+                Applicant(currentSalary > 500000 && currentSalary <= 1500000)
+                $s: SuggestedRole()
+            then
+                $s.setRole("Senior Developer");
+                update($s)
+        end
+        ```
+
+#### agenda-group
+-   This is basically used to group the rules
+
+##### Usage
+
+-   This is enabled by defining the rules in the "agenda-group" 
+
+```aidl
+rule "Suggest Developer Role"
+agenda-group "developer"
+    when
+        Applicant(experienceInYears > 0 && experienceInYears <= 5)
+        Applicant(currentSalary > 200000 && currentSalary <= 1000000)
+        $s: SuggestedRole()
+    then
+        $s.setRole("Developer");
+        update($s)
+end
+
+rule "Perform Manager Action"
+agenda-group "developer"
+    when
+       $s : (SuggestedRole(role == ruleEngineConstant.MANAGER.toString()) or SuggestedRole(role == ruleEngineConstant.SENIOR_DEVELOPER.toString()))
+    then
+        System.out.println("Perform " + $s.getRole()  +" Action");
+ end
+``` 
+
+-   By default all the rules have the implicit **MAIN** group.
+-   In order to use the custom **agenda-group** we need to explicitly set that in the code
+    - The same can be done by using the below command
+    ```
+    val kSession = kContainer.newKieSession("rules.applicant.suggestapplicant.session")
+    ```     
+    
+    
+#### date-effective/data-expires   
+
+-   The below makes it effective on a given date
+
+```aidl
+rule "Hike Based On Performance"
+    date-effective "01-Apr-2020"
+     date-expires "31-Apr-2020"
+when
+    $e : Employee(performance >= 4)
+    $b: Bonus()
+then
+    Double bonusValue = $e.getSalary() * 0.3;
+    $b.setBonusAmount(bonusValue);
+ end
+
+```
+
+### Controlling Loops in rules
+
+- Check the book for this one.
+
+### Special Drools operations
+
+#### Boolean and numeric operations
+
+```aidl
+Item( salePrice > 100.00 && salePrice <= 500.00&& salePrice != 101.00 )
+
+```
+-   It is best to avoid rules that has multiple conditions in it. 
+-   The right way to use these conditions is to have a separate rule for each condition   
+
+#### Regex operations – matches
+
+```
+rule "validate customer emails"
+       when $c: Customer(email not matches "[A-Za-z0-9-.]+@[A-Za-z0-9-.]+$")
+       then $c.setEmail(null); //invalidate email
+   end
+```
+
+#### Collection operations – contains and memberOf
+
+```aidl
+rule "print orders with pencils in them"
+     when
+       $i: Item(name == "pencil")
+       $ol: OrderLine(item == $i)
+       $o: Order($ol memberOf orderLines, orderLines contains $ol)
+     then
+       System.out.println("order with pencils: " + $o);
+   end
+```
+
+###  Working memory breakdown: the from clause
+
+-   The **from** clause is a very versatile tool. It can be used to get data from multiple sources and not only from attributes.
+```aidl
+rule "For every notebook order apply points coupon"
+     when
+       $o: Order($c: customer, $lines: orderLines)
+       OrderLine($item: item) from $lines // retrieved the 
+       Item(name == "notebook") from $item
+     then
+       insert(new Coupon($c, $o, CouponType.POINTS));
+   end
+```
+
+## Things to Do
+
+-   Dynamically set the rule attributes [TODO]
+    -   date-effective "01-Apr-2020"
+    -   date-expires "31-Apr-2020"
+-   Have the same object run through different rules to get the result [DONE]
+    -   This is working as expected    

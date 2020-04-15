@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    application
+    //application
     kotlin("kapt")
     id ("org.jetbrains.kotlin.plugin.noarg")
 
