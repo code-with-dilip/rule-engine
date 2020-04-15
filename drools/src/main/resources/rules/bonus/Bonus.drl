@@ -4,12 +4,32 @@ import com.learndrools.domain.Bonus
 import kotlin.Pair
 import java.util.HashMap
 import java.util.Map
+global com.learndrools.constants.RuleEngineConstants ruleEngineConstant;
 
-rule "Hike Based On Performance Greater than 4"
+
+rule "Hike Based On Performance Greater than 4 with Extra Role"
    /* date-effective "01-Apr-2020"
      date-expires "31-Apr-2020"*/
 when
-    $e : Employee(performance >= 4)
+    $e : Employee(performance >= 4, extraRole memberOf ruleEngineConstant.roles(), ruleEngineConstant.roles() contains extraRole)
+    $b: Bonus()
+then
+    Double bonusValue = $e.getSalary() * 0.4;
+    $b.setBonusAmount(bonusValue);
+    Map<String, String> pair = new HashMap<>();
+    pair.put("ABC", "1");
+    $b.getPointsMap().putAll(pair);
+    //$b.setPointsMap(pair);
+    System.out.println("First Rule");
+ end
+
+
+
+rule "Hike Based On Performance Greater than 4 with No Extra Role"
+   /* date-effective "01-Apr-2020"
+     date-expires "31-Apr-2020"*/
+when
+    $e : Employee(performance >= 4 && extraRole.length() == 0)
     $b: Bonus()
 then
     Double bonusValue = $e.getSalary() * 0.3;
@@ -18,19 +38,5 @@ then
     pair.put("ABC", "1");
     $b.getPointsMap().putAll(pair);
     //$b.setPointsMap(pair);
- end
-
-
-rule "Hike Based On Performance equal to 4"
-    /*date-effective "01-Apr-2020"
-     date-expires "31-Apr-2020"*/
-when
-    $e : Employee(performance == 4)
-    $b: Bonus()
-then
-    Double bonusValue = $e.getSalary() * 0.3;
-    $b.setBonusAmount(bonusValue);
-    Map<String, String> pair = new HashMap<>();
-    pair.put("DEF", "2");
-    $b.getPointsMap().putAll(pair);
+    System.out.println("Second Rule");
  end

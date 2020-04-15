@@ -340,7 +340,41 @@ then
 
 ### Controlling Loops in rules
 
-- Check the book for this one.
+#### Declared Types
+
+-   Types can also be declared in the DRL file. Example given below
+
+```aidl
+declare SpecialOrder extends Order
+      whatsSoSpecialAboutIt: String
+      order: Order
+      applicableDiscount: Discount
+   end
+```
+
+-   But its really difficult to work with.
+
+```aidl
+KieSession ksession = ...; //previously initialized
+FactType type = ksession.getKieBase().getFactType("chapter04.declaredTypes", "SpecialOrder");
+Object instance = type.newInstance();
+type.set(instance, "relevance", 2L);
+Object attr = type.get(instance, "relevance");
+```
+
+#### Property-reactive beans
+
+-   This is handy when you would like to reevaluate a rule based on the single property change
+
+```aidl
+ declare PropertyReactiveOrder
+       @propertyReactive
+       discount: Discount
+       totalItems: Integer
+       total: Double
+   end
+```
+
 
 ### Special Drools operations
 
@@ -361,6 +395,19 @@ rule "validate customer emails"
        then $c.setEmail(null); //invalidate email
    end
 ```
+
+### Special Drools operations
+
+#### Boolean and numeric operations
+
+-  Boolean operations are the ones that use AND, OR, XOR, and so on. Numeric operations are the ones that compare two numeric values.
+
+-   For performing those operations we need to use &&, ||. 
+
+#### Regex operations – matches
+
+-   Regex is supported in Drools
+-   Please check the example in the book.
 
 #### Collection operations – contains and memberOf
 

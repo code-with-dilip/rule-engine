@@ -4,5 +4,6 @@ data class Employee(
     val name: String,
     val salary: Double,
     val role: String,
-    val performance: Double
+    val performance: Double,
+    val extraRole: String
 )
