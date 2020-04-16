@@ -340,7 +340,41 @@ then
 
 ### Controlling Loops in rules
 
-- Check the book for this one.
+#### Declared Types
+
+-   Types can also be declared in the DRL file. Example given below
+
+```aidl
+declare SpecialOrder extends Order
+      whatsSoSpecialAboutIt: String
+      order: Order
+      applicableDiscount: Discount
+   end
+```
+
+-   But its really difficult to work with.
+
+```aidl
+KieSession ksession = ...; //previously initialized
+FactType type = ksession.getKieBase().getFactType("chapter04.declaredTypes", "SpecialOrder");
+Object instance = type.newInstance();
+type.set(instance, "relevance", 2L);
+Object attr = type.get(instance, "relevance");
+```
+
+#### Property-reactive beans
+
+-   This is handy when you would like to reevaluate a rule based on the single property change
+
+```aidl
+ declare PropertyReactiveOrder
+       @propertyReactive
+       discount: Discount
+       totalItems: Integer
+       total: Double
+   end
+```
+
 
 ### Special Drools operations
 
@@ -352,6 +386,7 @@ Item( salePrice > 100.00 && salePrice <= 500.00&& salePrice != 101.00 )
 ```
 -   It is best to avoid rules that has multiple conditions in it. 
 -   The right way to use these conditions is to have a separate rule for each condition   
+-   For performing those operations we need to use &&, ||. 
 
 #### Regex operations – matches
 
@@ -365,30 +400,184 @@ rule "validate customer emails"
 #### Collection operations – contains and memberOf
 
 ```aidl
-rule "print orders with pencils in them"
-     when
-       $i: Item(name == "pencil")
-       $ol: OrderLine(item == $i)
-       $o: Order($ol memberOf orderLines, orderLines contains $ol)
-     then
-       System.out.println("order with pencils: " + $o);
-   end
+rule "Hike Based On Performance Greater than 4 with Extra Role"
+   /* date-effective "01-Apr-2020"
+     date-expires "31-Apr-2020"*/
+when
+    $e : Employee(performance >= 4, extraRole memberOf ruleEngineConstant.roles(), ruleEngineConstant.roles() contains extraRole)
+    $b: Bonus()
+then
+    Double bonusValue = $e.getSalary() * 0.4;
+    $b.setBonusAmount(bonusValue);
+    Map<String, String> pair = new HashMap<>();
+    pair.put("ABC", "1");
+    $b.getPointsMap().putAll(pair);
+    //$b.setPointsMap(pair);
+    System.out.println("First Rule");
+ end
 ```
 
 ###  Working memory breakdown: the from clause
 
 -   The **from** clause is a very versatile tool. It can be used to get data from multiple sources and not only from attributes.
+-   In the below example the **from** clause to iterate through the list and match on a specific value on each and every element
+
 ```aidl
-rule "For every notebook order apply points coupon"
-     when
-       $o: Order($c: customer, $lines: orderLines)
-       OrderLine($item: item) from $lines // retrieved the 
-       Item(name == "notebook") from $item
+rule "Cricket Hobby"
+    /* date-effective "01-Apr-2020"
+      date-expires "31-Apr-2020"*/
+ when
+     $e : Employee($hobbies: hobbies)
+     $ho: Hobby($h : hobby && hobby == "cricket") from $hobbies
+ then
+      System.out.println("Cricket Hobby Rule invoked" + $ho);
+  end
+```
+
+#### Collect from objects
+
+ -  If we insert 50 orders to KieSession and then fire the rules, the rule will fire only once, producing a list of 50 orders.
+```aidl
+rule "Grouping orders"
+     when $list: List() from collect(Order())
      then
-       insert(new Coupon($c, $o, CouponType.POINTS));
+          System.out.println("we've found " +$list.size() + " orders");
    end
 ```
 
+#### Accumulate keyword
+
+-    The **accumulate** keyword is used to transform every match of a condition to a specific type of data.
+
+-   Some common examples where the accumulate keyword is used are counting elements that match a specific condition, get average values of an attribute of certain type of objects, and to find the average, minimum, or maximum values of a specific attribute in a condition.
+
+-   Check the book for examples.
+
+#### Advanced conditional elements
+
+-   NOT
+-   EXISTS AND FORALL KEYWORDS
+-   FORALL
+
+
+**NOT KEYWORD**
+
+```aidl
+rule "warn about empty working memory"
+    when
+           not(Order() or Item())
+       then
+           System.out.println("we don't have elements");
+   end
+```
+
+### Drools syntactic sugar
+
+-   Nested accessors for the attributes of our types
+    ```aidl
+    OrderLine( item.cost < 30.0, item.salePrice < 25.0 )
+
+    ```
+    -   The better approach is to use types
+    
+    ```aidl
+    OrderLine( item.( cost < 30.0,salePrice < 25.0) )
+    ```    
+-   Inline casts for attributes of our types
+-   Null-safe operators
+    ```aidl
+    Order(customer!.category != Category.NA)
+    ```
+### Decorating our objects in memory
+
+-   This is done using **Traits**
+
+-   We can create a trait using the below example.
+
+#### Creating a new trait 
+
+```aidl
+declare trait KidFriendly
+    kidAppeal: String
+end
+```
+
+-   Example usage of Trait is given below
+
+```aidl
+rule "toy items are kid friendly"
+    no-loop
+    when 
+        $i: TraitableItem(name contains "toy")
+    then
+        KidFriendly kf = don($i, KidFriendly.class);
+        kf.setKidAppeal("can play with it");
+end
+
+rule "Advertise kid friendly element"
+    when 
+        $kf: KidFriendly($ka: kidAppeal)
+    then
+        System.out.println("The element "+$kf+ 
+            " is kid friendly because " + $ka);
+end
+```
+
+#### Removing Traits
+
+```aidl
+Object o = shed( $traitedObject, KidFriendly.class)
+```
+
+### Logical insertion of elements
+
+-   The **insertLogical** allows you to remove objects automatically from the memory is the condition is evaluated to be false.
+-   Logical insertion not only avoid needing extra rules to sanitize our working memory, but also open the possibility of locking objects to specific conditions   
+
+```
+rule "determine large orders"
+    when $o: Order(total > 150)
+    then insertLogical(new IsLargeOrder($o));
+end
+```
+
+#### Handling deviations of our rules
+
+- This can be done using the **neg** operator
+
+```aidl
+rule "large orders exception"
+       when $o: Order(total > 150, totalItems < 5)
+       then insertLogical(new IsLargeOrder($o), "neg");
+   end
+```
+
+### Rule Inheritance
+
+-   Rule Inheritance is the concept of inheriting the rules behavior in to another rule.
+-   This concept is similar to **Inheritance** in Java
+
+- Example :  
+
+```aidl
+rule "A"
+whens: String(this == "A")
+thenSystem.out.println(s);
+end
+
+rule "B" extends "A"
+when
+  i: Integer(intValue > 2)
+then  System.out.println(i);
+end
+```
+
+#### Conditional named consequences
+
+-   They are basically extra then clauses marked by an identifier to make one rule behave as several. The same identifier has to be used in the rule condition with the go keyword to identify when you should go to that specific consequence
+
+ 
+    
 ## Things to Do
 
 -   Dynamically set the rule attributes [TODO]
