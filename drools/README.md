@@ -386,6 +386,7 @@ Item( salePrice > 100.00 && salePrice <= 500.00&& salePrice != 101.00 )
 ```
 -   It is best to avoid rules that has multiple conditions in it. 
 -   The right way to use these conditions is to have a separate rule for each condition   
+-   For performing those operations we need to use &&, ||. 
 
 #### Regex operations – matches
 
@@ -395,19 +396,6 @@ rule "validate customer emails"
        then $c.setEmail(null); //invalidate email
    end
 ```
-
-### Special Drools operations
-
-#### Boolean and numeric operations
-
--  Boolean operations are the ones that use AND, OR, XOR, and so on. Numeric operations are the ones that compare two numeric values.
-
--   For performing those operations we need to use &&, ||. 
-
-#### Regex operations – matches
-
--   Regex is supported in Drools
--   Please check the example in the book.
 
 #### Collection operations – contains and memberOf
 
@@ -500,6 +488,96 @@ rule "warn about empty working memory"
     ```aidl
     Order(customer!.category != Category.NA)
     ```
+### Decorating our objects in memory
+
+-   This is done using **Traits**
+
+-   We can create a trait using the below example.
+
+#### Creating a new trait 
+
+```aidl
+declare trait KidFriendly
+    kidAppeal: String
+end
+```
+
+-   Example usage of Trait is given below
+
+```aidl
+rule "toy items are kid friendly"
+    no-loop
+    when 
+        $i: TraitableItem(name contains "toy")
+    then
+        KidFriendly kf = don($i, KidFriendly.class);
+        kf.setKidAppeal("can play with it");
+end
+
+rule "Advertise kid friendly element"
+    when 
+        $kf: KidFriendly($ka: kidAppeal)
+    then
+        System.out.println("The element "+$kf+ 
+            " is kid friendly because " + $ka);
+end
+```
+
+#### Removing Traits
+
+```aidl
+Object o = shed( $traitedObject, KidFriendly.class)
+```
+
+### Logical insertion of elements
+
+-   The **insertLogical** allows you to remove objects automatically from the memory is the condition is evaluated to be false.
+-   Logical insertion not only avoid needing extra rules to sanitize our working memory, but also open the possibility of locking objects to specific conditions   
+
+```
+rule "determine large orders"
+    when $o: Order(total > 150)
+    then insertLogical(new IsLargeOrder($o));
+end
+```
+
+#### Handling deviations of our rules
+
+- This can be done using the **neg** operator
+
+```aidl
+rule "large orders exception"
+       when $o: Order(total > 150, totalItems < 5)
+       then insertLogical(new IsLargeOrder($o), "neg");
+   end
+```
+
+### Rule Inheritance
+
+-   Rule Inheritance is the concept of inheriting the rules behavior in to another rule.
+-   This concept is similar to **Inheritance** in Java
+
+- Example :  
+
+```aidl
+rule "A"
+whens: String(this == "A")
+thenSystem.out.println(s);
+end
+
+rule "B" extends "A"
+when
+  i: Integer(intValue > 2)
+then  System.out.println(i);
+end
+```
+
+#### Conditional named consequences
+
+-   They are basically extra then clauses marked by an identifier to make one rule behave as several. The same identifier has to be used in the rule condition with the go keyword to identify when you should go to that specific consequence
+
+ 
+    
 ## Things to Do
 
 -   Dynamically set the rule attributes [TODO]
