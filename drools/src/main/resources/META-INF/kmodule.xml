@@ -1,13 +1,14 @@
-<kmodule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+<?xml version="1.0" encoding="UTF-8"?>
+<kmodule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xmlns="http://jboss.org/kie/6.0.0/kmodule">
-    <!--<kbase name="rules" default="true" includes="rules.applicant">-->
-    <!--<kbase name="rules.applicant" packages="rules.applicant">-->
-    <kbase name="rules.applicant">
+<!--<kbase name="rules" default="true" includes="rules.applicant">-->
+    <kbase name="applicantRules" packages="applicant" >
+<!--<kbase name="rules.applicant">-->
         <ksession name="rules.applicant.suggestapplicant.session" type="stateful"/>
         <ksession name="rules.applicant.suggestapplicant.session_stateless" type="stateless"/>
     </kbase>
 
-    <kbase name="rules.bonus" packages="rules.bonus">
+    <kbase name="rules.bonus" packages="bonus">
         <ksession name="rules.applicant.bonus.session" type="stateful"/>
     </kbase>
 </kmodule>

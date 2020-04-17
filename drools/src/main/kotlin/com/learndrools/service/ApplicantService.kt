@@ -10,10 +10,10 @@ import org.kie.api.builder.Message
 
 class ApplicantService {
 
-    val kieSession = DroolsRuleFactory().getKieSession()
+    //val kieSession = DroolsRuleFactory().getKieSession()
     val ruleEngineConstant = RuleEngineConstants()
 
-    fun suggestedRoleForApplicant(applicant: Applicant, suggestedRole: SuggestedRole): SuggestedRole {
+   /* fun suggestedRoleForApplicant(applicant: Applicant, suggestedRole: SuggestedRole): SuggestedRole {
 
         kieSession.insert(applicant) // this is a fact to the rule engine
         kieSession.insert(suggestedRole)
@@ -21,7 +21,7 @@ class ApplicantService {
         kieSession.setGlobal("ruleEngineConstant", ruleEngineConstant)
         kieSession.fireAllRules()
         return suggestedRole
-    }
+    }*/
 
     fun loadRulesFromClassPath(applicant: Applicant, suggestedRole: SuggestedRole): SuggestedRole {
 

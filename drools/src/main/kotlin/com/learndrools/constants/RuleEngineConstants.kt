@@ -2,7 +2,7 @@ package com.learndrools.constants
 
 import java.time.LocalDate
 
-class RuleEngineConstants {
+open class RuleEngineConstants {
     companion object {
         const val MANAGER = "Manager"
         const val SENIOR_DEVELOPER = "Senior Developer"

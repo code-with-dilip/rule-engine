@@ -576,8 +576,79 @@ end
 
 -   They are basically extra then clauses marked by an identifier to make one rule behave as several. The same identifier has to be used in the rule condition with the go keyword to identify when you should go to that specific consequence
 
+## Understanding KIE Sessions
+
+The sessions are basically split in to two
+    -   Stateless
+    -   Stateful 
  
-    
+ ### Stateless KieSession 
+ 
+ -  This kind of session is equivalent to invoking a method in a Java class.
+ 
+ ```
+val ks = KieServices.Factory.get()
+        val kContainer = ks.kieClasspathContainer
+        val kSession = kContainer.newStatelessKieSession("rules.applicant.suggestapplicant.session_stateless")
+        kSession.setGlobal("ruleEngineConstant", ruleEngineConstant)
+        val applicant = ks.commands.newInsert(applicant)
+        val suggestedRole = ks.commands.newInsert(suggestedRole, "suggestedRoleOut")
+        val newFireAllRules = ks.commands.newFireAllRules("outFired")
+        // kSession.(applicant)
+        val commands = listOf(applicant, suggestedRole, newFireAllRules)
+        val execResults = kSession.execute(ks.commands.newBatchExecution(commands))
+        return execResults.getValue("suggestedRoleOut") as SuggestedRole
+```  
+
+-   All the resources are automatically feed up after the execution of the stateless session
+-   Summing up, stateless Kie Sessions are ideal for stateless evaluations such as:
+    -   Data validation
+    -   Calculations
+    -   Data filtering
+    -   Message routing
+
+### Stateful KieSession
+
+-   This maintains the session between the invocations of **fireAllRules** method
+
+- Example Code
+-   In the below example the session maintained between the two fireRules() invocations.
+
+```
+  fun suggestedRoleForApplicant(applicant: Applicant, suggestedRole: SuggestedRole): SuggestedRole {
+
+        kieSession.insert(applicant) // this is a fact to the rule engine
+        kieSession.insert(suggestedRole)
+        //kieSession.setGlobal("suggestedRole", suggestedRole)
+        kieSession.setGlobal("ruleEngineConstant", ruleEngineConstant)
+        kieSession.fireAllRules()
+        kieSession.insert(suggestedRole)
+        kieSession.fireAllRules() // The state that got created in the previous fireAllRules() is still accessible to the rule engine.
+        return suggestedRole
+    }
+```
+
+### Kie runtime components
+-   The most common way to interact with the Drools session is insert/modify/retract and executing a rule that may have happened as a consequence of it
+-   There are many other ways to interact with it:
+    -   globals, 
+    -   channels, 
+    -   queries, and 
+    -   event listeners
+
+#### global
+
+-   A global is, in many cases, a contact point between a session and the external word
+-   A global is mainly used to extract information to/from session
+
+##### GLOBALS AS A WAY TO PARAMETERIZE THE CONDITION OF A PATTERN
+
+-   One way globals are normally used in Drools is as a way to externally parameterize the condition of a rule
+
+##### GLOBALS AS A WAY TO INTRODUCE NEW INFORMATION INTO A SESSION IN THE LHS
+
+-   Using the global to retrieve the information from the external world through service calls.
+
 ## Things to Do
 
 -   Dynamically set the rule attributes [TODO]

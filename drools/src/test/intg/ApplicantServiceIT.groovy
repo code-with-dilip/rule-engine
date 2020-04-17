@@ -9,7 +9,7 @@ class ApplicantServiceIT extends Specification {
 
     def applicantService = new ApplicantService()
 
-    def "suggestedRoleForApplicant"() {
+  /*  def "suggestedRoleForApplicant"() {
         given:
         def suggestedRole = new SuggestedRole()
 
@@ -25,7 +25,7 @@ class ApplicantServiceIT extends Specification {
         new Applicant("John", 32, 2500000, 11) || "Manager"
         new Applicant("John Jr", 32, 510000, 9) || "Senior Developer"
         new Applicant("John Jr 1", 3, 210000, 4) || "Developer"
-    }
+    }*/
 
     def "loadRulesFromClassPath"() {
         given:

@@ -1,7 +1,6 @@
-package rules;
+package applicant;
 
 import com.learndrools.domain.Applicant;
-
 import com.learndrools.domain.SuggestedRole;
 global com.learndrools.constants.RuleEngineConstants ruleEngineConstant;
 
